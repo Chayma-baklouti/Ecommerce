@@ -1,6 +1,7 @@
 services:
   backend:
-    image: ${CI_REGISTRY_IMAGE}/backend:${IMAGE_TAG:-latest}
+    image: ecommerce-backend:latest
+    pull_policy: never
     restart: unless-stopped
     ports:
       - "5000:3001"
@@ -43,7 +44,8 @@ services:
       start_period: 30s
 
   frontend:
-    image: ${CI_REGISTRY_IMAGE}/frontend:${IMAGE_TAG:-latest}
+    image: ecommerce-frontend:latest
+    pull_policy: never
     restart: unless-stopped
     ports:
       - "3000:80"

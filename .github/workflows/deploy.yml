@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t ecommerce-backend:latest ./backend
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            --build-arg VITE_BACK_URL="${{ secrets.VITE_BACK_URL }}" \
+            --build-arg VITE_BACK_END_URL="${{ secrets.VITE_BACK_END_URL }}" \
+            --build-arg VITE_FRONTEND_URL="${{ secrets.VITE_FRONTEND_URL }}" \
+            --build-arg VITE_STRIPE_PUBLISHABLE_KEY="${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}" \
+            --build-arg VITE_PAYPAL_CLIENT_ID="${{ secrets.VITE_PAYPAL_CLIENT_ID }}" \
+            --build-arg VITE_GOOGLE_CLIENT_ID="${{ secrets.VITE_GOOGLE_CLIENT_ID }}" \
+            -t ecommerce-frontend:latest ./frontend
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Send images to the VM
+        run: |
+          docker save ecommerce-backend:latest ecommerce-frontend:latest | gzip | \
+            ssh "$SSH_USER@$SSH_HOST" "gunzip | docker load"
+
+      - name: Deploy
+        run: |
+          scp docker-compose.prod.yml "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/docker-compose.yml"
+          ssh "$SSH_USER@$SSH_HOST" "cd $DEPLOY_PATH && docker compose up -d && docker image prune -f"
