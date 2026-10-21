@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { formatPriceCalculation } from '../util/formatPrice';
-
-// Fonction utilitaire pour obtenir une URL d'image valide
 const getImageUrl = (image) => {
-  if (!image) return '/placeholder.png';
-  // Chemin local (développement)
-  if (image.startsWith('/src') || image.startsWith('/public')) return image;
-  // URL absolue
-  if (image.startsWith('http')) return image;
-  // Sinon, c'est un nom de fichier backend
+  if (!image) return "";
+  if (image.startsWith("/assets/") || image.startsWith("http")) return image;
   return `${import.meta.env.VITE_BACK_END_URL}/images/${image}`;
 };
-
 const OrderSummary = ({ address, paymentMethod }) => {
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -41,15 +34,14 @@ const OrderSummary = ({ address, paymentMethod }) => {
     if (loading) {
         return <div className="text-center py-8">Chargement du panier...</div>;
     }
-
     return (
         <div className="container mx-auto px-4 mb-8">
             <div className="flex flex-wrap">
-                <div className="w-full lg:w-8/12 pr-4">
+                <div className="w-full lg:w-8/12 lg:pr-4">
                     <div className="space-y-4">
                         {/* Adresse de livraison */}
-                        <div className="p-4 border rounded-lg shadow-xs">
-                            <h2 className='text-2xl font-semibold mb-2'>Billing Address</h2>
+                        <div className="p-6 border rounded-lg shadow-xs">
+                            <h2 className="text-2xl font-semibold mb-4">Billing Address</h2>
                             <p><strong>Building Name: </strong>{address?.buildingName || '—'}</p>
                             <p><strong>City: </strong>{address?.city || '—'}</p>
                             <p><strong>Street: </strong>{address?.street || '—'}</p>
@@ -59,52 +51,78 @@ const OrderSummary = ({ address, paymentMethod }) => {
                         </div>
 
                         {/* Moyen de paiement */}
-                        <div className='p-4 border rounded-lg shadow-xs'>
-                            <h2 className='text-2xl font-semibold mb-2'>Payment Method</h2>
+                        <div className="p-6 border rounded-lg shadow-xs">
+                            <h2 className="text-2xl font-semibold mb-4">Payment Method</h2>
                             <p><strong>Method: </strong>{paymentMethod || 'Not selected'}</p>
                         </div>
 
                         {/* Articles commandés */}
-                        <div className='pb-4 border rounded-lg shadow-xs mb-6'>
-                            <h2 className='text-2xl font-semibold mb-2'>Order Items</h2>
+                        <div className="p-6 border rounded-lg shadow-xs">
+                            <h2 className="text-2xl font-semibold mb-4">Order Items</h2>
+
                             {cart.length === 0 ? (
                                 <p className="text-gray-400 p-4">No items in cart</p>
                             ) : (
-                                <div className='space-y-2'>
+                                <ul className="divide-y divide-gray-200">
                                     {cart.map((item) => {
                                         const price = item.specialPrice ?? item.price ?? 0;
                                         const quantity = item.quantity ?? 1;
                                         const lineTotal = price * quantity;
                                         const imageUrl = getImageUrl(item.image);
+                                        const key = `${item.productId}-${item.selectedSize}-${item.selectedColor}`;
+
                                         return (
-                                            <div key={item.productId} className='flex items-center gap-3 p-2 border-b'>
-                                                <img
-                                                    src={imageUrl}
-                                                    alt={item.productName || item.title}
-                                                    className='w-12 h-12 rounded-sm object-contain'
-                                                    onError={(e) => { e.target.src = '/placeholder.png'; }}
-                                                />
-                                                <div className='flex-1 text-gray-600'>
-                                                    <p className='font-medium text-black'>
+                                            <li key={key} className="flex items-center gap-4 py-4 first:pt-0 last:pb-0">
+                                                <div className="w-20 h-20 shrink-0 rounded-lg border bg-gray-50 flex items-center justify-center overflow-hidden">
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={item.productName || item.title}
+                                                        className="max-w-full max-h-full object-contain"
+                                                        onError={(e) => {
+                                                            e.currentTarget.onerror = null;
+                                                            e.currentTarget.style.visibility = 'hidden';
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium text-black truncate">
                                                         {item.productName || item.title}
                                                     </p>
-                                                    <p className='text-sm'>
-                                                        {quantity} x ${price.toFixed(2)} = ${lineTotal.toFixed(2)}
+                                                    <p className="text-sm text-gray-500 mt-1">
+                                                        {quantity} × ${price.toFixed(2)}
                                                     </p>
-                                                    {item.selectedSize && <p className='text-xs text-gray-400'>Size: {item.selectedSize}</p>}
-                                                    {item.selectedColor && (
-                                                        <p className='text-xs text-gray-400 flex items-center gap-1'>
-                                                            Color: <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', backgroundColor: item.selectedColor, border: '1px solid #ccc' }} />
-                                                        </p>
-                                                    )}
+                                                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                                                        {item.selectedSize && (
+                                                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                                                                Size: {item.selectedSize}
+                                                            </span>
+                                                        )}
+                                                        {item.selectedColor && (
+                                                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 flex items-center gap-1">
+                                                                Color:
+                                                                <span
+                                                                    style={{
+                                                                        display: 'inline-block',
+                                                                        width: 12,
+                                                                        height: 12,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: item.selectedColor,
+                                                                        border: '1px solid #ccc',
+                                                                    }}
+                                                                />
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className='font-semibold'>
+
+                                                <div className="font-semibold text-right whitespace-nowrap">
                                                     ${lineTotal.toFixed(2)}
                                                 </div>
-                                            </div>
+                                            </li>
                                         );
                                     })}
-                                </div>
+                                </ul>
                             )}
                         </div>
                     </div>
@@ -112,8 +130,8 @@ const OrderSummary = ({ address, paymentMethod }) => {
 
                 {/* Résumé de la commande */}
                 <div className="w-full lg:w-4/12 mt-4 lg:mt-0">
-                    <div className="border rounded-lg shadow-xs p-4 space-y-4">
-                        <h2 className="text-2xl font-semibold mb-2">Order Summary</h2>
+                    <div className="border rounded-lg shadow-xs p-6 space-y-4">
+                        <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
                         <div className="space-y-2">
                             <div className="flex justify-between">
                                 <span>Products</span>
