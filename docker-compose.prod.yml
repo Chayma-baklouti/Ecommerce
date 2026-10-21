@@ -3,30 +3,31 @@ services:
     image: ecommerce-backend:latest
     pull_policy: never
     restart: unless-stopped
-    ports:
-      - "5000:3001"
+    expose:
+      - "3001"
     environment:
       SERVER_PORT: 3001
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
 
-      # Base de données
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
-      # JWT (CORRECTION : Spring cherche spring.app.jwtSecret)
       SPRING_APP_JWTSECRET: ${JWT_SECRET}
       SPRING_APP_JWTEXPIRATIONMS: ${JWT_EXPIRATION_MS:-172800000}
       SPRING_ECOM_APP_JWTCOOKIENAME: ${JWT_COOKIE_NAME:-springBootEcom}
       PROJECT_IMAGE: images/
 
-      # Google OAuth2 (adapte les noms si tes propriétés sont personnalisées)
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
 
-      # Mail
+      SPRING_MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      SPRING_MAIL_PORT: ${MAIL_PORT:-587}
       SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
       SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
     volumes:
       - ./backend/images:/app/images
     depends_on:
