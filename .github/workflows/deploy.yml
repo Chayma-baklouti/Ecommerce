@@ -1,3 +1,4 @@
+# .github/workflows/deploy.yml
 name: Deploy
 
 on:
@@ -30,9 +31,11 @@ jobs:
             -t ecommerce-frontend:latest ./frontend
 
       - name: Set up SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
@@ -43,5 +46,15 @@ jobs:
 
       - name: Deploy
         run: |
+          ssh "$SSH_USER@$SSH_HOST" "mkdir -p $DEPLOY_PATH/backend/images"
           scp docker-compose.prod.yml "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/docker-compose.yml"
-          ssh "$SSH_USER@$SSH_HOST" "cd $DEPLOY_PATH && docker compose up -d && docker image prune -f"
+          ssh "$SSH_USER@$SSH_HOST" "
+            set -e
+            cd $DEPLOY_PATH
+            test -f .env || { echo 'ERREUR: .env manquant dans $DEPLOY_PATH'; exit 1; }
+            docker compose up -d
+            docker image prune -f
+            sleep 25
+            docker compose ps
+            docker compose logs backend --tail 30
+          "
