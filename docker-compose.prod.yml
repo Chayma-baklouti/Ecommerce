@@ -17,6 +17,8 @@ services:
       # JWT (CORRECTION : Spring cherche spring.app.jwtSecret)
       SPRING_APP_JWTSECRET: ${JWT_SECRET}
       SPRING_APP_JWTEXPIRATIONMS: ${JWT_EXPIRATION_MS:-172800000}
+      SPRING_ECOM_APP_JWTCOOKIENAME: ${JWT_COOKIE_NAME:-springBootEcom}
+      PROJECT_IMAGE: images/
 
       # Google OAuth2 (adapte les noms si tes propriétés sont personnalisées)
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
