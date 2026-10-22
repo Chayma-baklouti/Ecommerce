@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: Deploy
 
 on:
@@ -39,14 +38,17 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
+      - name: Save images
+        run: docker save ecommerce-backend:latest ecommerce-frontend:latest | gzip > images.tar.gz
+
       - name: Send images to the VM
         run: |
-          docker save ecommerce-backend:latest ecommerce-frontend:latest | gzip | \
-            ssh "$SSH_USER@$SSH_HOST" "gunzip | docker load"
-            
+          scp images.tar.gz "$SSH_USER@$SSH_HOST:/tmp/images.tar.gz"
+          ssh "$SSH_USER@$SSH_HOST" "gunzip -c /tmp/images.tar.gz | docker load && rm -f /tmp/images.tar.gz"
+
       - name: Deploy
         run: |
-          ssh "$SSH_USER@$SSH_HOST" "mkdir -p $DEPLOY_PATH/backend/images; [ -d $DEPLOY_PATH/Caddyfile ] && rm -rf $DEPLOY_PATH/Caddyfile || true"
+          ssh "$SSH_USER@$SSH_HOST" "mkdir -p $DEPLOY_PATH/backend/images; if [ -d $DEPLOY_PATH/Caddyfile ]; then rm -rf $DEPLOY_PATH/Caddyfile; fi"
           scp Caddyfile "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/Caddyfile"
           scp docker-compose.prod.yml "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/docker-compose.yml"
           ssh "$SSH_USER@$SSH_HOST" "
