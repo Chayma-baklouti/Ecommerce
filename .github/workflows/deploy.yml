@@ -57,6 +57,7 @@ jobs:
             test -f .env || { echo 'ERREUR: .env manquant dans $DEPLOY_PATH'; exit 1; }
             docker ps -a --format '{{.Names}}' | grep -E '^[0-9a-f]{12}_' | xargs -r docker rm -f || true
             docker compose up -d --remove-orphans
+            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile || docker compose restart caddy
             docker image prune -f
             sleep 25
             docker compose ps
