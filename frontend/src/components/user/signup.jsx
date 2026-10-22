@@ -7,7 +7,7 @@ import InputFieldd from "../util/InputFieldcopy";
 import Spinners from "../util/Spinners";
 import "../../css/login.css";
 import interfac from "../../images/shop smart live better.png";
-import { registerNewUser } from "../actions/action";
+import { registerNewUser, authenticateGoogleUser } from "../actions/action";
 import SocialLogin from '../util/SocialLogin';
 export default function Signup() {
   const navigate = useNavigate();
