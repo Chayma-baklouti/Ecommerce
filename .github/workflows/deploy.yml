@@ -43,21 +43,20 @@ jobs:
         run: |
           docker save ecommerce-backend:latest ecommerce-frontend:latest | gzip | \
             ssh "$SSH_USER@$SSH_HOST" "gunzip | docker load"
-
+            
       - name: Deploy
         run: |
-          ssh "$SSH_USER@$SSH_HOST" "mkdir -p $DEPLOY_PATH/backend/images && [ -d $DEPLOY_PATH/Caddyfile ] && rm -rf $DEPLOY_PATH/Caddyfile || true"
+          ssh "$SSH_USER@$SSH_HOST" "mkdir -p $DEPLOY_PATH/backend/images; [ -d $DEPLOY_PATH/Caddyfile ] && rm -rf $DEPLOY_PATH/Caddyfile || true"
           scp Caddyfile "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/Caddyfile"
           scp docker-compose.prod.yml "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/docker-compose.yml"
           ssh "$SSH_USER@$SSH_HOST" "
             set -e
             cd $DEPLOY_PATH
-            test -f .env || { echo 'ERREUR: .env manquant'; exit 1; }
+            test -f .env || { echo 'ERREUR: .env manquant dans $DEPLOY_PATH'; exit 1; }
             docker ps -a --format '{{.Names}}' | grep -E '^[0-9a-f]{12}_' | xargs -r docker rm -f || true
             docker compose up -d --remove-orphans
             docker image prune -f
             sleep 25
             docker compose ps
-            docker compose logs caddy --tail 15
-            docker compose logs backend --tail 15
+            docker compose logs backend --tail 20
           "
