@@ -7,6 +7,7 @@ services:
       - "3001"
     environment:
       SERVER_PORT: 3001
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
 
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${DB_NAME}
@@ -59,10 +60,25 @@ services:
     image: ecommerce-frontend:latest
     pull_policy: never
     restart: unless-stopped
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - backend
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
 volumes:
   db_data:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,3 @@
+transnova-shop.swedencentral.cloudapp.azure.com {
+    reverse_proxy frontend:80
+}
