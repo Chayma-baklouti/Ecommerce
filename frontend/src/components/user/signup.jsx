@@ -36,7 +36,6 @@ const handleGoogleFailure = () => {
   const password = watch("password");
 
   const signupHandler = async (data) => {
-    console.log("Signup Click", data);
     dispatch(registerNewUser(data, toast, reset, navigate, setLoader));
   };
 

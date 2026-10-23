@@ -35,8 +35,6 @@ const handleGoogleFailure = () => {
   } = useForm({ mode: "onTouched" });
 
   const loginHandler = async (formData) => {
-    console.log("Login Click");
-
     try {
       await dispatch(
         authenticateSignInUser(formData, toast, reset, navigate, setLoader)

@@ -27,7 +27,6 @@ import vd from "../../images/7262257-uhd_3840_2160_25fps.mp4"
 export default function Content() {
 const elements = products.filter(product => product.feature=== "weekly")
 const element = products.filter(product => product.feature=== "today")
-console.log("Liste des pre=today :", products.filter(p => p.feature === "today"));
 
 const categories = [
   { label: "Men's", img: men ,ID:0},

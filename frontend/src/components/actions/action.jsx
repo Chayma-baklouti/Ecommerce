@@ -16,7 +16,6 @@ export const fetchProducts = (queryString) => async (dispatch) => {
         });
         dispatch({ type: "IS_SUCCESS" });
     } catch (error) {
-        console.log(error);
         dispatch({ 
             type: "IS_ERROR",
             payload: error?.response?.data?.message || "Failed to fetch products",
@@ -40,7 +39,6 @@ export const fetchCategories = () => async (dispatch) => {
         });
         dispatch({ type: "IS_ERROR" });
     } catch (error) {
-        console.log(error);
         dispatch({ 
             type: "IS_ERROR",
             payload: error?.response?.data?.message || "Failed to fetch categories",
